@@ -113,8 +113,6 @@ func AddNewTask(w http.ResponseWriter, r *http.Request){
 		taskids = append(taskids,t.ID) 
 	}
 
-
-
 	var _, max = MinMax(taskids)
 	tid := max + 1
 	task.ID = tid
