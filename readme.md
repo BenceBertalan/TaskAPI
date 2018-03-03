@@ -2,6 +2,8 @@ A TaskManager API written in GO for testing/learning purpose.
 
 It will accept, run, and store tasks (OS commands/apps) and their results.
 
+All the Tasks are stored as Documents (objects) in a configured MongoDB database.
+
 This app creates a webservice which exposes the following API endpoints:
 
 - /api/tasks (GET) - get all Tasksk from the App
