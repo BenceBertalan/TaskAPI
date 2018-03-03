@@ -10,8 +10,8 @@ This app creates a webservice which exposes the following API endpoints:
 
 The tasks have the following required JSON fields:
 
--Name: The name of the task
--Command: The command which the user wants to run
+- Name: The name of the task
+- Command: The command which the user wants to run
 
 The app can be run standalone or using Docker Compose.
 
