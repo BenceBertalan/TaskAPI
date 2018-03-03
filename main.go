@@ -91,7 +91,7 @@ func CreateDBConn(checkconn bool) {
 
 func main() {
 	//Load Global Config
-	fmt.Println("Getting app configuration")
+	fmt.Println("Getting app configuration...")
 	GetConfig()
 	if globalconfig.Method == "" {
 		panic("Unable to get config using any method")
