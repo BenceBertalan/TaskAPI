@@ -1,0 +1,21 @@
+---
+version: "2"
+services:
+  mongo:
+    image: "registry.hub.docker.com/library/mongo"
+    restart: "no"
+    hostname: "mongo"
+    networks:
+    - "internal"
+  golang:
+    build: ./go_container
+    restart: "no"
+    ports:
+        - 3000:3000
+    networks:
+    - "internal"
+    depends_on: 
+    - mongo
+networks:
+  internal:
+    external: false

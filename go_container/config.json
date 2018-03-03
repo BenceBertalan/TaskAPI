@@ -1,0 +1,4 @@
+{
+    "HTTP_Port_Number":"3000",
+    "DB_HostName":"mongo"
+}
