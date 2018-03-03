@@ -34,8 +34,8 @@ type Task struct {
 
 //Config : Structure to contain Config data
 type Config struct {
-	HTTPPortNumber string `json:"HTTP_Port_Number"`
-	DBHostName     string `json:"DB_HostName"`
+	HTTPPortNumber string `json:"APP_PORT"`
+	DBHostName     string `json:"APP_DB_HOSTNAME"`
 	Method         string
 }
 
@@ -44,9 +44,7 @@ func GetConfig() {
 
 	env := true
 	tempcfgdbhostname := os.Getenv("APP_DB_HOSTNAME")
-	fmt.Println(tempcfgdbhostname)
 	tempcfgport := os.Getenv("APP_PORT")
-	fmt.Println(tempcfgport)
 	if tempcfgdbhostname != "" {
 		globalconfig.DBHostName = tempcfgdbhostname
 	} else {
@@ -63,11 +61,12 @@ func GetConfig() {
 		if err != nil {
 		}
 		err = json.Unmarshal(configbytes, &globalconfig)
+		fmt.Println(globalconfig)
 		if err == nil {
 			globalconfig.Method = "CofigFile"
 		}
 	} else {
-		globalconfig.Method = "Enviroment"
+		globalconfig.Method = "EnvironmentVars"
 	}
 }
 
@@ -112,7 +111,7 @@ func main() {
 	router.HandleFunc("/api/tasks", AddNewTaskHandler).Methods("POST")
 	router.HandleFunc("/api/tasks", ModifyTaskHandler).Methods("PATCH")
 	//start HTTP endpoint with attached MUX(router)
-	fmt.Printf("Starting to listen on port %s", globalconfig.HTTPPortNumber)
+	fmt.Println("Starting to listen on port " + globalconfig.HTTPPortNumber)
 	log.Fatal(http.ListenAndServe(":"+globalconfig.HTTPPortNumber, router))
 
 }
@@ -245,7 +244,7 @@ func RunTask(t Task) {
 	t.LastRunDateTime = time.String()
 	t.Status = "Running"
 	ModifyTask(t)
-	o, err := exec.Command("cmd", "/c", t.Command).Output()
+	o, err := exec.Command(t.Command).Output()
 	if err != nil {
 		t.Status = "Failed"
 		t.Output = string("Error while executing command, please, check Your syntax. Error description: " + err.Error())
