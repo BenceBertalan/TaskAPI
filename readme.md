@@ -20,6 +20,7 @@ The app can be run standalone or using Docker Compose.
 Standalone:
 - For standalone run, a configured and running MongoDB instance is needed (authentication is not supported)
 - Then, the config.json should be edited to have the hostname of the MongoDB server
+- Finally, You have to start the API, AND the TaskAPIWorker aswell to process the requests.
 
 Docker-Compose method:
 
