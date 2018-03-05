@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/exec"
 	"strconv"
 	"time"
 
@@ -107,6 +106,7 @@ func main() {
 	router := mux.NewRouter()
 	//Define endpoints
 	router.HandleFunc("/api/tasks", GetTasksHandler).Methods("GET")
+	router.HandleFunc("/api/tasks/pending", GetPendingTasksHandler).Methods("GET")
 	router.HandleFunc("/api/tasks/{id}", GetTaskByIDHandler).Methods("GET")
 	router.HandleFunc("/api/tasks", AddNewTaskHandler).Methods("POST")
 	router.HandleFunc("/api/tasks", ModifyTaskHandler).Methods("PATCH")
@@ -118,12 +118,22 @@ func main() {
 
 //ReadAllTasks : Internal fuction to Read the "DB" (Create a slice of Tasks based on Json file)
 func ReadAllTasks() []Task {
-	var temp []Task
+	temp := make([]Task, 0)
 	err := globalDBcollection.Find(nil).All(&temp)
 	if err != nil {
-		panic(err)
 	}
 	return temp
+}
+
+//GetAllPendingTasks : Queries pending tasksk from the db
+func GetAllPendingTasks() []Task {
+	pending := make([]Task, 0)
+	for _, t := range ReadAllTasks() {
+		if t.Status == "Pending" {
+			pending = append(pending, t)
+		}
+	}
+	return pending
 }
 
 //WriteTaskToDB : Inserts the Task to the DB
@@ -137,6 +147,12 @@ func WriteTaskToDB(t Task) {
 //GetTasksHandler : Get all tasks in JSON format
 func GetTasksHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(ReadAllTasks())
+	return
+}
+
+//GetPendingTasksHandler : Writes Pending task response
+func GetPendingTasksHandler(w http.ResponseWriter, r *http.Request) {
+	json.NewEncoder(w).Encode(GetAllPendingTasks())
 	return
 }
 
@@ -196,11 +212,9 @@ func AddNewTaskHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	time := time.Now()
 	task.CreatedDateTime = time.String()
+	task.Status = "Pending"
 	//Write the new Task to the "DB"
-	//WriteTasktoJSONFile(task)
 	WriteTaskToDB(task)
-	// Run the command defined in the task
-	RunTaskAsync(task)
 	//Return the task in the HTTP response output
 	json.NewEncoder(w).Encode(task)
 	return
@@ -231,27 +245,4 @@ func ModifyTaskHandler(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewDecoder(r.Body).Decode(&task)
 	json.NewEncoder(w).Encode(ModifyTask(task))
 	return
-}
-
-//RunTaskAsync : Run task in a separate goroutine
-func RunTaskAsync(t Task) {
-	go RunTask(t)
-}
-
-//RunTask : It runs the task based on Task definition, and update status + output field in DB
-func RunTask(t Task) {
-	time := time.Now()
-	t.LastRunDateTime = time.String()
-	t.Status = "Running"
-	ModifyTask(t)
-	o, err := exec.Command(t.Command).Output()
-	if err != nil {
-		t.Status = "Failed"
-		t.Output = string("Error while executing command, please, check Your syntax. Error description: " + err.Error())
-	} else {
-		t.Status = "Success"
-		t.Output = string(o)
-	}
-
-	ModifyTask(t)
 }
