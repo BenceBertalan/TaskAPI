@@ -148,7 +148,7 @@ func SearchTaskbyID(id int) Task {
 
 	err := globalDBcollection.Find(bson.M{"id": id}).One(&found)
 	if err != nil {
-		log.Fatal(err)
+
 	}
 
 	return found
